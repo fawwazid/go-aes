@@ -1,32 +1,26 @@
+# Go - Advanced Encryption Standard (AES)
 
-# go-aes
+A small, minimal Go library that provides AES helpers across common modes:
 
-A small Go library providing AES utilities across several modes (AEAD, block, and stream modes).
+- AES-GCM (AEAD)
+- AES-CBC (block mode with PKCS#7 padding)
+- AES-ECB (block mode with PKCS#7 padding) — use only when you understand its limitations
+- AES-CFB, AES-OFB, AES-CTR (stream modes)
+- AES-XTS (disk/sector mode, via `golang.org/x/crypto/xts`)
 
-Features
-- AES-GCM (authenticated): `EncryptGCM` / `DecryptGCM`
-- AES-CBC (block, PKCS#7 padding): `EncryptCBC` / `DecryptCBC`
-- AES-ECB (block, PKCS#7 padding): `EncryptECB` / `DecryptECB` (not recommended for repeating data)
-- AES-CFB (stream): `EncryptCFB` / `DecryptCFB`
-- AES-OFB (stream): `EncryptOFB` / `DecryptOFB` (stdlib marks OFB deprecated; consider CTR)
-- AES-CTR (stream): `EncryptCTR` / `DecryptCTR`
-- AES-XTS (disk/sector mode): `EncryptXTS` / `DecryptXTS` (uses `golang.org/x/crypto/xts`)
+The repository exposes convenient functions for encryption/decryption, key and nonce generation, and small helpers for base64/hex encoding.
 
-Utilities
-- `GenerateAESKey(bits)` — generate an AES key (128/192/256 bits)
-- `GenerateXTSKeyForAES(bits)` — generate a combined XTS key (two AES keys concatenated)
-- `GenerateNonce(size)` — generate a nonce (defaults to 12 bytes for GCM)
-- Base64/Hex helpers: `EncodeBase64`, `DecodeBase64`, `HexEncode`, `HexDecode`
+**Installation**
 
-Installation
-
-This project uses Go modules. The XTS implementation depends on `golang.org/x/crypto/xts`. It will be fetched automatically when running `go test`, or you can add it manually:
+This project uses Go modules. Add it to your project with:
 
 ```bash
-go get golang.org/x/crypto/xts
+go get github.com/fawwazid/go-aes@latest
 ```
 
-Quick example (Go)
+The XTS implementation depends on `golang.org/x/crypto`; it will be fetched automatically.
+
+**Quick Example (AES-GCM)**
 
 ```go
 package main
@@ -39,37 +33,59 @@ import (
 )
 
 func main() {
-    key, _ := goaes.GenerateAESKey(256)
+    key, err := goaes.GenerateAESKey(256)
+    if err != nil {
+        log.Fatal(err)
+    }
+
     plaintext := []byte("hello AES-GCM world")
 
-    // AES-GCM (authenticated)
     ct, err := goaes.EncryptGCM(key, plaintext, nil)
     if err != nil {
         log.Fatal(err)
     }
+
     pt, err := goaes.DecryptGCM(key, ct, nil)
     if err != nil {
         log.Fatal(err)
     }
+
     fmt.Println(string(pt))
 }
 ```
 
-Running tests
+**API / Common Functions**
+
+- `EncryptGCM(key, plaintext, aad) ([]byte, error)` — AES-GCM encrypt
+- `DecryptGCM(key, ciphertext, aad) ([]byte, error)` — AES-GCM decrypt
+- `EncryptCBC` / `DecryptCBC` — CBC with PKCS#7 padding
+- `EncryptECB` / `DecryptECB` — ECB with PKCS#7 padding (not recommended for variable-length, repeating data)
+- `EncryptCFB` / `DecryptCFB`, `EncryptOFB` / `DecryptOFB`, `EncryptCTR` / `DecryptCTR` — stream modes
+- `EncryptXTS` / `DecryptXTS` — XTS mode for disk/sector encryption
+- `GenerateAESKey(bits)` — generate AES key (128, 192, or 256)
+- `GenerateXTSKeyForAES(bits)` — generate combined key material for XTS (two AES keys)
+- `GenerateNonce(size)` — generate a nonce (GCM commonly uses 12 bytes)
+
+See the source for exact signatures and additional helpers (base64/hex encoders).
+
+**Running Tests**
+
+From the repository root run:
 
 ```bash
 go test ./...
 ```
 
-Security notes
-- Prefer AEAD modes (like AES-GCM) when you need both confidentiality and integrity.
-- XTS is designed for disk/sector encryption and does not provide authentication — add an integrity layer if required.
-- Avoid ECB for data with repeating patterns.
+**Security Notes**
 
-Contributing
+- Prefer AEAD modes (AES-GCM) when you need both confidentiality and integrity.
+- XTS is intended for disk/sector encryption and does not provide authentication — add integrity separately if needed.
+- Avoid ECB for data with repeating patterns; use authenticated or randomized modes instead.
 
-Issues and pull requests are welcome.
+**Contributing**
 
-License
+Pull requests and issues are welcome. If you add features, include tests and keep the API consistent.
 
-Add a license of your choice to this repository if you plan to redistribute.
+**License**
+
+This repository includes a `LICENSE` file. Choose a license before redistributing the code.

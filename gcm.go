@@ -10,7 +10,7 @@ import (
 
 // EncryptGCM encrypts plaintext using AES-GCM (Galois/Counter Mode).
 //
-// NIST 2025 Status: RECOMMENDED (SP 800-38D).
+// NIST SP 800-38D Recommendation: Authenticated Encryption (AEAD).
 // This mode provides both confidentiality and authenticity (AEAD).
 //
 // Parameters:

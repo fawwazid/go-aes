@@ -5,7 +5,7 @@
 
 A small, minimal Go library that provides AES helpers.
 
-**NIST 2025 Compliance**:
+**NIST Recommendations (SP 800-38 Series)**:
 
 - **RECOMMENDED**: AES-GCM (Authenticated Encryption).
 - **Insecure**: AES-ECB (Use only for legacy compatibility).
@@ -86,13 +86,13 @@ From the repository root run:
 go test ./...
 ```
 
-**NIST 2025 Security Compliance**
+**NIST Recommendations (SP 800-38 Series)**
 
-1.  **Authenticated Encryption**: Prefer **AES-GCM** for all general-purpose encryption. It provides both confidentiality and data integrity (AEAD).
+1.  **Authenticated Encryption (SP 800-38D)**: Prefer **AES-GCM** for all general-purpose encryption. It provides both confidentiality and data integrity (AEAD).
 2.  **Key Size**: Use **32-byte (256-bit)** keys for long-term security and post-quantum resistance compatibility.
-3.  **Legacy Modes** (CBC, CFB, CTR, OFB): These modes provide **confidentiality only**. They are malleable and do not detect tampering. If you must use them, you **MUST** implement a separate Message Authentication Code (HMAC).
-4.  **Insecure Mode** (ECB): **Data larger than one block is insecure** in ECB mode as it reveals patterns. Use only for legacy data recovery or strictly single-block operations.
-5.  **Storage Encryption**: **AES-XTS** is recommended for data-at-rest (disk encryption) but not for data-in-transit.
+3.  **Confidentiality Modes (SP 800-38A)**: CBC, CFB, CTR, OFB. These modes provide **confidentiality only**. They are malleable and do not detect tampering. If you must use them, you **MUST** implement a separate Message Authentication Code (HMAC).
+4.  **Insecure Mode (SP 800-38A)**: ECB. **Data larger than one block is insecure** in ECB mode as it reveals patterns. Use only for legacy data recovery or strictly single-block operations.
+5.  **Storage Encryption (SP 800-38E)**: **AES-XTS** is recommended for data-at-rest (disk encryption) but not for data-in-transit.
 
 **Contributing**
 

@@ -10,7 +10,7 @@ import (
 
 // EncryptCTR encrypts plaintext using AES in CTR mode.
 //
-// NIST 2025 Warning: This mode provides Confidentiality ONLY.
+// NIST SP 800-38A Warning: This mode provides Confidentiality ONLY.
 // It is malleable: bit-flipping attacks on ciphertext will directly flip bits in plaintext.
 // NEVER reuse a (Key, IV) pair.
 //

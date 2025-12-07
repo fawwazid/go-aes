@@ -10,7 +10,7 @@ import (
 
 // EncryptCBC encrypts plaintext using AES-CBC with PKCS#7 padding.
 //
-// NIST 2025 Warning: This mode provides Confidentiality ONLY.
+// NIST SP 800-38A Warning: This mode provides Confidentiality ONLY.
 // It DOES NOT provide integrity or authenticity.
 // Vulnerable to Padding Oracle attacks if not implemented with constant-time MAC.
 //

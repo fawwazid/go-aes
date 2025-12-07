@@ -11,7 +11,7 @@ import (
 // GenerateKey returns a random key of the specified byte length.
 // Allowed AES key lengths are 16 (AES-128), 24 (AES-192), or 32 (AES-256) bytes.
 //
-// NIST 2025 Recommendation: Use 32 bytes (AES-256) for long-term security
+// NIST SP 800-57 Recommendation: Use 32 bytes (AES-256) for long-term security
 // and post-quantum resistance.
 func GenerateKey(size int) ([]byte, error) {
 	if size != 16 && size != 24 && size != 32 {
@@ -22,7 +22,7 @@ func GenerateKey(size int) ([]byte, error) {
 
 // GenerateAESKey creates an AES key of the specified bit length (128, 192, 256).
 //
-// NIST 2025 Recommendation: Use bits=256 for top-secret data or long-term protection.
+// NIST SP 800-57 Recommendation: Use bits=256 for top-secret data or long-term protection.
 func GenerateAESKey(bits int) ([]byte, error) {
 	switch bits {
 	case 128:

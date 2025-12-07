@@ -7,7 +7,7 @@ import (
 
 // EncryptECB encrypts plaintext using AES in ECB mode with PKCS#7 padding.
 //
-// NIST 2025 Warning: INSECURE MODE.
+// NIST SP 800-38A Warning: INSECURE MODE.
 // Do NOT use for data larger than one block. Patterns in plaintext remain visible in ciphertext.
 // This mode is provided for legacy compatibility only.
 //

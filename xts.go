@@ -9,7 +9,7 @@ import (
 
 // EncryptXTS encrypts plaintext using AES-XTS.
 //
-// NIST 2025 Status: Approved for Storage Devices (Data-at-Rest) ONLY (SP 800-38E).
+// NIST SP 800-38E Recommendation: Approved for Storage Devices (Data-at-Rest) ONLY.
 // NOT intended for General Purpose encryption or Data-in-Transit.
 //
 // The `key` must be twice the length of the underlying AES key (i.e. 32, 48 or 64 bytes).

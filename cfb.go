@@ -10,7 +10,7 @@ import (
 
 // EncryptCFB encrypts plaintext using AES in CFB mode.
 //
-// NIST 2025 Warning: This mode provides Confidentiality ONLY.
+// NIST SP 800-38A Warning: This mode provides Confidentiality ONLY.
 // It is malleable: bit-flipping attacks on ciphertext will change plaintext predictably.
 //
 // Recommendation: Use EncryptGCM (AEAD) instead.

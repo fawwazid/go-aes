@@ -1,4 +1,4 @@
-package tests
+package goaes_test
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 	goaes "github.com/fawwazid/go-aes"
 )
 
-func TestAESCFB_EncryptDecrypt(t *testing.T) {
-	plaintext := []byte("How vexingly quick daft zebras jump")
+func TestAESOFB_EncryptDecrypt(t *testing.T) {
+	plaintext := []byte("Bright vixens jump; dozy fowl quack")
 
 	for _, k := range []int{16, 24, 32} {
 		key := make([]byte, k)
@@ -16,12 +16,12 @@ func TestAESCFB_EncryptDecrypt(t *testing.T) {
 			key[i] = byte(i)
 		}
 
-		ct, err := goaes.EncryptCFB(key, plaintext)
+		ct, err := goaes.EncryptOFB(key, plaintext)
 		if err != nil {
 			t.Fatalf("encrypt failed for key len %d: %v", k, err)
 		}
 
-		pt, err := goaes.DecryptCFB(key, ct)
+		pt, err := goaes.DecryptOFB(key, ct)
 		if err != nil {
 			t.Fatalf("decrypt failed for key len %d: %v", k, err)
 		}
@@ -30,12 +30,12 @@ func TestAESCFB_EncryptDecrypt(t *testing.T) {
 			t.Fatalf("plaintext mismatch for key len %d", k)
 		}
 
-		// tamper detection: flip last byte — CFB is not authenticated,
-		// so decryption will succeed but plaintext should not match original.
+		// tamper detection: flip last byte — OFB is unauthenticated,
+		// so decryption will succeed but plaintext should differ.
 		bad := make([]byte, len(ct))
 		copy(bad, ct)
 		bad[len(bad)-1] ^= 0xFF
-		pt2, err := goaes.DecryptCFB(key, bad)
+		pt2, err := goaes.DecryptOFB(key, bad)
 		if err != nil {
 			t.Fatalf("decrypt (tampered) returned error for key len %d: %v", k, err)
 		}

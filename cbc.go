@@ -8,38 +8,15 @@ import (
 	"io"
 )
 
-func pkcs7Pad(data []byte, blockSize int) []byte {
-	pad := blockSize - (len(data) % blockSize)
-	if pad == 0 {
-		pad = blockSize
-	}
-	out := make([]byte, len(data)+pad)
-	copy(out, data)
-	for i := len(data); i < len(out); i++ {
-		out[i] = byte(pad)
-	}
-	return out
-}
-
-func pkcs7Unpad(data []byte, blockSize int) ([]byte, error) {
-	if len(data) == 0 || len(data)%blockSize != 0 {
-		return nil, errors.New("invalid padded data length")
-	}
-	pad := int(data[len(data)-1])
-	if pad == 0 || pad > blockSize {
-		return nil, errors.New("invalid padding size")
-	}
-	// verify padding bytes
-	for i := len(data) - pad; i < len(data); i++ {
-		if int(data[i]) != pad {
-			return nil, errors.New("invalid padding")
-		}
-	}
-	return data[:len(data)-pad], nil
-}
-
 // EncryptCBC encrypts plaintext using AES-CBC with PKCS#7 padding.
-// Returns IV prepended to ciphertext (iv||ciphertext).
+//
+// NIST SP 800-38A Warning: This mode provides Confidentiality ONLY.
+// It DOES NOT provide integrity or authenticity.
+// Vulnerable to Padding Oracle attacks if not implemented with constant-time MAC.
+//
+// Recommendation: Use EncryptGCM (AEAD) instead.
+//
+// Returns: IV prepended to ciphertext (iv||ciphertext).
 func EncryptCBC(key, plaintext []byte) ([]byte, error) {
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
 		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")

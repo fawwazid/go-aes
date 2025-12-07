@@ -9,7 +9,13 @@ import (
 )
 
 // EncryptCFB encrypts plaintext using AES in CFB mode.
-// It returns IV prepended to ciphertext (iv||ciphertext).
+//
+// NIST SP 800-38A Warning: This mode provides Confidentiality ONLY.
+// It is malleable: bit-flipping attacks on ciphertext will change plaintext predictably.
+//
+// Recommendation: Use EncryptGCM (AEAD) instead.
+//
+// Returns IV prepended to ciphertext (iv||ciphertext).
 func EncryptCFB(key, plaintext []byte) ([]byte, error) {
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
 		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")

@@ -1,4 +1,4 @@
-package tests
+package goaes_test
 
 import (
 	"bytes"

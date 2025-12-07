@@ -6,6 +6,13 @@ import (
 )
 
 // EncryptECB encrypts plaintext using AES in ECB mode with PKCS#7 padding.
+//
+// NIST 2025 Warning: INSECURE MODE.
+// Do NOT use for data larger than one block. Patterns in plaintext remain visible in ciphertext.
+// This mode is provided for legacy compatibility only.
+//
+// Recommendation: Use EncryptGCM (AEAD) instead.
+//
 // It returns the ciphertext (no IV used in ECB).
 func EncryptECB(key, plaintext []byte) ([]byte, error) {
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {

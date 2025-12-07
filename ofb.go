@@ -9,7 +9,14 @@ import (
 )
 
 // EncryptOFB encrypts plaintext using AES in OFB mode.
-// It returns IV prepended to ciphertext (iv||ciphertext).
+//
+// NIST 2025 Warning: This mode provides Confidentiality ONLY.
+// It is malleable: bit-flipping attacks on ciphertext will directly flip bits in plaintext.
+// Pre-computation of keystream is possible.
+//
+// Recommendation: Use EncryptGCM (AEAD) instead.
+//
+// Returns IV prepended to ciphertext (iv||ciphertext).
 func EncryptOFB(key, plaintext []byte) ([]byte, error) {
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
 		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")

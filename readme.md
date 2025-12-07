@@ -1,12 +1,22 @@
 # Go - Advanced Encryption Standard (AES)
 
-A small, minimal Go library that provides AES helpers across common modes:
+[![Go Report Card](https://goreportcard.com/badge/github.com/fawwazid/go-aes)](https://goreportcard.com/report/github.com/fawwazid/go-aes)
+[![Go Reference](https://pkg.go.dev/badge/github.com/fawwazid/go-aes.svg)](https://pkg.go.dev/github.com/fawwazid/go-aes)
 
-- AES-GCM (AEAD)
-- AES-CBC (block mode with PKCS#7 padding)
-- AES-ECB (block mode with PKCS#7 padding) — use only when you understand its limitations
-- AES-CFB, AES-OFB, AES-CTR (stream modes)
-- AES-XTS (disk/sector mode, via `golang.org/x/crypto/xts`)
+A small, minimal Go library that provides AES helpers.
+
+**NIST 2025 Compliance**:
+
+- **RECOMMENDED**: AES-GCM (Authenticated Encryption).
+- **Insecure**: AES-ECB (Use only for legacy compatibility).
+- **Confidentiality Only**: AES-CBC, AES-CFB, AES-CTR, AES-OFB (Must use separate MAC for integrity).
+
+Supported modes:
+
+- **AES-GCM** (AEAD) - **Recommended**
+- AES-CBC, AES-CFB, AES-OFB, AES-CTR
+- AES-ECB (Insecure)
+- AES-XTS (Disk/Storage only)
 
 The repository exposes convenient functions for encryption/decryption, key and nonce generation, and small helpers for base64/hex encoding.
 
@@ -76,11 +86,13 @@ From the repository root run:
 go test ./...
 ```
 
-**Security Notes**
+**NIST 2025 Security Compliance**
 
-- Prefer AEAD modes (AES-GCM) when you need both confidentiality and integrity.
-- XTS is intended for disk/sector encryption and does not provide authentication — add integrity separately if needed.
-- Avoid ECB for data with repeating patterns; use authenticated or randomized modes instead.
+1.  **Authenticated Encryption**: Prefer **AES-GCM** for all general-purpose encryption. It provides both confidentiality and data integrity (AEAD).
+2.  **Key Size**: Use **32-byte (256-bit)** keys for long-term security and post-quantum resistance compatibility.
+3.  **Legacy Modes** (CBC, CFB, CTR, OFB): These modes provide **confidentiality only**. They are malleable and do not detect tampering. If you must use them, you **MUST** implement a separate Message Authentication Code (HMAC).
+4.  **Insecure Mode** (ECB): **Data larger than one block is insecure** in ECB mode as it reveals patterns. Use only for legacy data recovery or strictly single-block operations.
+5.  **Storage Encryption**: **AES-XTS** is recommended for data-at-rest (disk encryption) but not for data-in-transit.
 
 **Contributing**
 

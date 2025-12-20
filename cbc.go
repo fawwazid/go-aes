@@ -1,7 +1,6 @@
 package goaes
 
 import (
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
@@ -14,15 +13,15 @@ import (
 // It DOES NOT provide integrity or authenticity.
 // Vulnerable to Padding Oracle attacks if not implemented with constant-time MAC.
 //
-// Recommendation: Use EncryptGCM (AEAD) instead.
+// Recommendation: Use EncryptGCM (AEAD) instead for better security.
+//
+// Parameters:
+//   - key: 16, 24, or 32 bytes (AES-128, 192, or 256).
+//   - plaintext: Data to be encrypted.
 //
 // Returns: IV prepended to ciphertext (iv||ciphertext).
 func EncryptCBC(key, plaintext []byte) ([]byte, error) {
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
-	}
-
-	block, err := aes.NewCipher(key)
+	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}
@@ -45,13 +44,16 @@ func EncryptCBC(key, plaintext []byte) ([]byte, error) {
 	return out, nil
 }
 
-// DecryptCBC decrypts data produced by EncryptCBC (expects iv prepended).
+// DecryptCBC decrypts data produced by EncryptCBC.
+// It expects the IV to be prepended to the ciphertext.
+//
+// Parameters:
+//   - key: same key used for encryption.
+//   - ciphertext: iv||ciphertext.
+//
+// Returns: decrypted plaintext (unpadded).
 func DecryptCBC(key, ciphertext []byte) ([]byte, error) {
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
-	}
-
-	block, err := aes.NewCipher(key)
+	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}

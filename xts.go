@@ -12,11 +12,15 @@ import (
 // NIST SP 800-38E Recommendation: Approved for Storage Devices (Data-at-Rest) ONLY.
 // NOT intended for General Purpose encryption or Data-in-Transit.
 //
-// The `key` must be twice the length of the underlying AES key (i.e. 32, 48 or 64 bytes).
-// `sectorNum` is the tweak (typically the sector or block number).
+// Parameters:
+//   - key: twice the length of the underlying AES key (32, 48 or 64 bytes).
+//   - plaintext: Data to be encrypted (must be multiple of 16 bytes).
+//   - sectorNum: the tweak (typically the sector or block number).
+//
+// Returns: ciphertext.
 func EncryptXTS(key, plaintext []byte, sectorNum uint64) ([]byte, error) {
-	if len(key) != 32 && len(key) != 48 && len(key) != 64 {
-		return nil, errors.New("invalid XTS key size: must be 32, 48, or 64 bytes")
+	if err := validateXTSKeySize(key); err != nil {
+		return nil, err
 	}
 
 	c, err := xts.NewCipher(aes.NewCipher, key)
@@ -34,9 +38,16 @@ func EncryptXTS(key, plaintext []byte, sectorNum uint64) ([]byte, error) {
 }
 
 // DecryptXTS decrypts ciphertext produced by EncryptXTS.
+//
+// Parameters:
+//   - key: same key used for encryption.
+//   - ciphertext: Data to be decrypted.
+//   - sectorNum: same sector number used for encryption.
+//
+// Returns: decrypted plaintext.
 func DecryptXTS(key, ciphertext []byte, sectorNum uint64) ([]byte, error) {
-	if len(key) != 32 && len(key) != 48 && len(key) != 64 {
-		return nil, errors.New("invalid XTS key size: must be 32, 48, or 64 bytes")
+	if err := validateXTSKeySize(key); err != nil {
+		return nil, err
 	}
 
 	c, err := xts.NewCipher(aes.NewCipher, key)

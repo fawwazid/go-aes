@@ -2,35 +2,39 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/fawwazid/go-aes.svg)](https://pkg.go.dev/github.com/fawwazid/go-aes)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fawwazid/go-aes)](https://goreportcard.com/report/github.com/fawwazid/go-aes)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A small, minimal Go library that provides AES helpers.
+Secure and easy-to-use Go library that provides AES helpers with a focus on compliance with NIST standards (SP 800-38 series).
 
-**NIST Recommendations (SP 800-38 Series)**:
+## Features
 
-- **RECOMMENDED**: AES-GCM (Authenticated Encryption).
-- **Insecure**: AES-ECB (Use only for legacy compatibility).
-- **Confidentiality Only**: AES-CBC, AES-CFB, AES-CTR, AES-OFB (Must use separate MAC for integrity).
+- **AES-GCM** (Authenticated Encryption) - **Highly Recommended**
+- **AES-XTS** (XEX-based-tweaked-codebook-mode with ciphertext stealing) - **For Disk Encryption**
+- **AES-CBC, AES-CFB, AES-OFB, AES-CTR** (Confidentiality modes)
+- **AES-ECB** (Included for legacy compatibility, use with caution)
+- Secure key and nonce generation using `crypto/rand`.
+- Helpers for Base64 and Hex encoding.
+- PKCS#7 padding implemented for block modes.
 
-Supported modes:
+## NIST Compliance (SP 800-38 Series)
 
-- **AES-GCM** (AEAD) - **Recommended**
-- AES-CBC, AES-CFB, AES-OFB, AES-CTR
-- AES-ECB (Insecure)
-- AES-XTS (Disk/Storage only)
+This library is designed following NIST recommendations:
 
-The repository exposes convenient functions for encryption/decryption, key and nonce generation, and small helpers for base64/hex encoding.
+1.  **Authenticated Encryption ([SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final))**: **AES-GCM** is the preferred choice for most applications as it provides both confidentiality and data integrity (AEAD).
+2.  **Key Size**: Always prefer **256-bit (32-byte)** keys for maximum security and post-quantum resistance.
+3.  **Data-at-Rest ([SP 800-38E](https://csrc.nist.gov/publications/detail/sp/800-38e/final))**: **AES-XTS** is the standard for disk and storage encryption.
+4.  **Legacy Modes ([SP 800-38A](https://csrc.nist.gov/publications/detail/sp/800-38a/final))**: CBC, CFB, CTR, and OFB provide **confidentiality only**. If you use these, you should implement a separate Message Authentication Code (HMAC) to ensure integrity.
+5.  **Insecure Mode**: **AES-ECB** is insecure for data larger than one block. Use it only for single-block operations or legacy system interoperability.
 
-**Installation**
-
-This project uses Go modules. Add it to your project with:
+## Installation
 
 ```bash
 go get github.com/fawwazid/go-aes@latest
 ```
 
-The XTS implementation depends on `golang.org/x/crypto`; it will be fetched automatically.
+## Quick Start
 
-**Quick Example (AES-GCM)**
+### AES-GCM (Recommended)
 
 ```go
 package main
@@ -43,61 +47,57 @@ import (
 )
 
 func main() {
+    // Generate a secure 256-bit key
     key, err := goaes.GenerateAESKey(256)
     if err != nil {
         log.Fatal(err)
     }
 
-    plaintext := []byte("hello AES-GCM world")
+    plaintext := []byte("secret message for AES-GCM")
 
-    ct, err := goaes.EncryptGCM(key, plaintext, nil)
+    // Encrypt (nonce is automatically generated and prepended)
+    ciphertext, err := goaes.EncryptGCM(key, plaintext, nil)
     if err != nil {
         log.Fatal(err)
     }
 
-    pt, err := goaes.DecryptGCM(key, ct, nil)
+    // Decrypt
+    decrypted, err := goaes.DecryptGCM(key, ciphertext, nil)
     if err != nil {
         log.Fatal(err)
     }
 
-    fmt.Println(string(pt))
+    fmt.Println(string(decrypted))
 }
 ```
 
-**API / Common Functions**
+## API Overview
 
-- `EncryptGCM(key, plaintext, aad) ([]byte, error)` — AES-GCM encrypt
-- `DecryptGCM(key, ciphertext, aad) ([]byte, error)` — AES-GCM decrypt
-- `EncryptCBC` / `DecryptCBC` — CBC with PKCS#7 padding
-- `EncryptECB` / `DecryptECB` — ECB with PKCS#7 padding (not recommended for variable-length, repeating data)
-- `EncryptCFB` / `DecryptCFB`, `EncryptOFB` / `DecryptOFB`, `EncryptCTR` / `DecryptCTR` — stream modes
-- `EncryptXTS` / `DecryptXTS` — XTS mode for disk/sector encryption
-- `GenerateAESKey(bits)` — generate AES key (128, 192, or 256)
-- `GenerateXTSKeyForAES(bits)` — generate combined key material for XTS (two AES keys)
-- `GenerateNonce(size)` — generate a nonce (GCM commonly uses 12 bytes)
+### Encryption / Decryption
 
-See the source for exact signatures and additional helpers (base64/hex encoders).
+| Mode | Encryption | Decryption | Note |
+|---|---|---|---|
+| **GCM** | `EncryptGCM(key, pt, aad)` | `DecryptGCM(key, ct, aad)` | **Recommended (AEAD)** |
+| **XTS** | `EncryptXTS(key, pt, sector)` | `DecryptXTS(key, ct, sector)` | For Disk/Storage |
+| **CBC** | `EncryptCBC(key, pt)` | `DecryptCBC(key, ct)` | Confidentiality only |
+| **CFB** | `EncryptCFB(key, pt)` | `DecryptCFB(key, ct)` | Confidentiality only |
+| **CTR** | `EncryptCTR(key, pt)` | `DecryptCTR(key, ct)` | Confidentiality only |
+| **OFB** | `EncryptOFB(key, pt)` | `DecryptOFB(key, ct)` | Confidentiality only |
+| **ECB** | `EncryptECB(key, pt)` | `DecryptECB(key, ct)` | **Insecure** |
 
-**Running Tests**
+### Utilities
 
-From the repository root run:
+- `GenerateAESKey(bits)`: Generate a random key (128, 192, or 256 bits).
+- `GenerateNonce(size)`: Generate a random nonce.
+- `EncodeBase64(data)` / `DecodeBase64(string)`: Base64 helpers.
+- `HexEncode(data)` / `HexDecode(string)`: Hex helpers.
+
+## Running Tests
 
 ```bash
-go test ./...
+go test -v ./...
 ```
 
-**NIST Recommendations (SP 800-38 Series)**
+## License
 
-1.  **Authenticated Encryption (SP 800-38D)**: Prefer **AES-GCM** for all general-purpose encryption. It provides both confidentiality and data integrity (AEAD).
-2.  **Key Size**: Use **32-byte (256-bit)** keys for long-term security and post-quantum resistance compatibility.
-3.  **Confidentiality Modes (SP 800-38A)**: CBC, CFB, CTR, OFB. These modes provide **confidentiality only**. They are malleable and do not detect tampering. If you must use them, you **MUST** implement a separate Message Authentication Code (HMAC).
-4.  **Insecure Mode (SP 800-38A)**: ECB. **Data larger than one block is insecure** in ECB mode as it reveals patterns. Use only for legacy data recovery or strictly single-block operations.
-5.  **Storage Encryption (SP 800-38E)**: **AES-XTS** is recommended for data-at-rest (disk encryption) but not for data-in-transit.
-
-**Contributing**
-
-Pull requests and issues are welcome. If you add features, include tests and keep the API consistent.
-
-**License**
-
-This repository includes a `LICENSE` file. Choose a license before redistributing the code.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

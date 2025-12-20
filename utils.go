@@ -1,6 +1,8 @@
 package goaes
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
@@ -14,8 +16,8 @@ import (
 // NIST SP 800-57 Recommendation: Use 32 bytes (AES-256) for long-term security
 // and post-quantum resistance.
 func GenerateKey(size int) ([]byte, error) {
-	if size != 16 && size != 24 && size != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
+	if err := validateKeySizeLength(size); err != nil {
+		return nil, err
 	}
 	return GenerateRandomBytes(size)
 }
@@ -96,12 +98,42 @@ func aesKeyBytesFromBits(bits int) (int, error) {
 	}
 }
 
+// newCipherBlock creates a new AES cipher block and validates the key size.
+func newCipherBlock(key []byte) (cipher.Block, error) {
+	if err := validateKeySize(key); err != nil {
+		return nil, err
+	}
+	return aes.NewCipher(key)
+}
+
+// validateKeySize checks if the key size is valid for AES (16, 24, or 32 bytes).
+func validateKeySize(key []byte) error {
+	return validateKeySizeLength(len(key))
+}
+
+// validateKeySizeLength checks if the given length is valid for an AES key.
+func validateKeySizeLength(length int) error {
+	if length != 16 && length != 24 && length != 32 {
+		return errors.New("invalid key size: must be 16, 24, or 32 bytes")
+	}
+	return nil
+}
+
+// validateXTSKeySize checks if the key size is valid for AES-XTS (32, 48, or 64 bytes).
+func validateXTSKeySize(key []byte) error {
+	if len(key) != 32 && len(key) != 48 && len(key) != 64 {
+		return errors.New("invalid XTS key size: must be 32, 48, or 64 bytes")
+	}
+	return nil
+}
+
 // HexEncode returns the hex encoding of b.
 func HexEncode(b []byte) string { return hex.EncodeToString(b) }
 
 // HexDecode decodes a hex string into bytes.
 func HexDecode(s string) ([]byte, error) { return hex.DecodeString(s) }
 
+// pkcs7Pad appends PKCS#7 padding to the data.
 func pkcs7Pad(data []byte, blockSize int) []byte {
 	pad := blockSize - (len(data) % blockSize)
 	if pad == 0 {
@@ -115,6 +147,7 @@ func pkcs7Pad(data []byte, blockSize int) []byte {
 	return out
 }
 
+// pkcs7Unpad removes PKCS#7 padding from the data and validates it.
 func pkcs7Unpad(data []byte, blockSize int) ([]byte, error) {
 	if len(data) == 0 || len(data)%blockSize != 0 {
 		return nil, errors.New("invalid padded data length")

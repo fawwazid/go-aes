@@ -1,7 +1,6 @@
 package goaes
 
 import (
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
@@ -20,11 +19,7 @@ import (
 //
 // Returns: nonce||ciphertext
 func EncryptGCM(key, plaintext, aad []byte) ([]byte, error) {
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
-	}
-
-	block, err := aes.NewCipher(key)
+	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}
@@ -47,13 +42,17 @@ func EncryptGCM(key, plaintext, aad []byte) ([]byte, error) {
 	return out, nil
 }
 
-// DecryptGCM decrypts data produced by EncryptGCM (expects nonce prepended).
+// DecryptGCM decrypts data produced by EncryptGCM.
+// It expects the nonce to be prepended to the ciphertext.
+//
+// Parameters:
+//   - key: same key used for encryption.
+//   - ciphertext: nonce||ciphertext.
+//   - aad: same additional data used for encryption.
+//
+// Returns: decrypted plaintext.
 func DecryptGCM(key, ciphertext, aad []byte) ([]byte, error) {
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
-	}
-
-	block, err := aes.NewCipher(key)
+	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}

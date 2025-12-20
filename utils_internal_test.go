@@ -362,6 +362,10 @@ func TestNewCipherBlockReturnsValidCipher(t *testing.T) {
 func TestNewCipherBlockWithDifferentKeySizes(t *testing.T) {
 	keySizes := []int{16, 24, 32}
 	var blocks []cipher.Block
+	var ciphertexts [][]byte
+
+	// Create a common plaintext to encrypt
+	plaintext := []byte("0123456789abcdef") // 16 bytes (one AES block)
 
 	for _, size := range keySizes {
 		key := make([]byte, size)
@@ -373,6 +377,11 @@ func TestNewCipherBlockWithDifferentKeySizes(t *testing.T) {
 			t.Fatalf("newCipherBlock failed for %d-byte key: %v", size, err)
 		}
 		blocks = append(blocks, block)
+
+		// Encrypt plaintext with this block to verify different outputs
+		ciphertext := make([]byte, len(plaintext))
+		block.Encrypt(ciphertext, plaintext)
+		ciphertexts = append(ciphertexts, ciphertext)
 	}
 
 	// Verify all blocks are created and functional
@@ -384,6 +393,15 @@ func TestNewCipherBlockWithDifferentKeySizes(t *testing.T) {
 	for i, block := range blocks {
 		if block.BlockSize() != 16 {
 			t.Errorf("Block %d (key size %d) has block size %d, expected 16", i, keySizes[i], block.BlockSize())
+		}
+	}
+
+	// Verify that different key sizes produce different ciphertext
+	for i := 0; i < len(ciphertexts); i++ {
+		for j := i + 1; j < len(ciphertexts); j++ {
+			if string(ciphertexts[i]) == string(ciphertexts[j]) {
+				t.Errorf("Cipher blocks with different key sizes (%d and %d bytes) produced identical ciphertext", keySizes[i], keySizes[j])
+			}
 		}
 	}
 }

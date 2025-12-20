@@ -335,7 +335,7 @@ func TestNewCipherBlock(t *testing.T) {
 // TestNewCipherBlockReturnsValidCipher tests that newCipherBlock returns a functional cipher.
 func TestNewCipherBlockReturnsValidCipher(t *testing.T) {
 	key := make([]byte, 32) // AES-256 key
-	// Fill key with some data to ensure it's not all zeros (though zeros work fine for testing)
+	// Fill key with sequential values to use a deterministic, non-trivial key pattern in tests.
 	for i := range key {
 		key[i] = byte(i)
 	}

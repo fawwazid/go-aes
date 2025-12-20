@@ -80,9 +80,6 @@ func TestValidateKeySizeLength(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("validateKeySizeLength(%d) error = %v, wantErr %v", tt.length, err, tt.wantErr)
 			}
-			if err != nil && !tt.wantErr {
-				t.Errorf("validateKeySizeLength(%d) unexpected error: %v", tt.length, err)
-			}
 		})
 	}
 }

@@ -256,9 +256,6 @@ func TestValidateXTSKeySize(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("validateXTSKeySize(key of length %d) error = %v, wantErr %v", len(tt.key), err, tt.wantErr)
 			}
-			if err != nil && !tt.wantErr {
-				t.Errorf("validateXTSKeySize(%d bytes) unexpected error: %v", len(tt.key), err)
-			}
 		})
 	}
 }
@@ -326,9 +323,8 @@ func TestNewCipherBlock(t *testing.T) {
 			if !tt.wantErr {
 				if block == nil {
 					t.Errorf("newCipherBlock(key of length %d) returned nil block with no error", len(tt.key))
-				}
-				// Verify the block has the correct block size for AES (always 16 bytes)
-				if block != nil && block.BlockSize() != 16 {
+				} else if block.BlockSize() != 16 {
+					// Verify the block has the correct block size for AES (always 16 bytes)
 					t.Errorf("newCipherBlock(key of length %d) block size = %d, want 16", len(tt.key), block.BlockSize())
 				}
 			}

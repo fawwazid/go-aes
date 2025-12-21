@@ -41,3 +41,17 @@ func TestAESGCM_EncryptDecrypt(t *testing.T) {
 		}
 	}
 }
+func TestAESGCM_InvalidKey(t *testing.T) {
+	key := []byte("invalid-key") // 11 bytes
+	plaintext := []byte("secret")
+
+	_, err := goaes.EncryptGCM(key, plaintext, nil)
+	if err == nil {
+		t.Error("expected error for invalid key size in EncryptGCM")
+	}
+
+	_, err = goaes.DecryptGCM(key, []byte("ct"), nil)
+	if err == nil {
+		t.Error("expected error for invalid key size in DecryptGCM")
+	}
+}

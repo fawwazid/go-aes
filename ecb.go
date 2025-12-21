@@ -1,7 +1,6 @@
 package goaes
 
 import (
-	"crypto/aes"
 	"errors"
 )
 
@@ -13,13 +12,13 @@ import (
 //
 // Recommendation: Use EncryptGCM (AEAD) instead.
 //
-// It returns the ciphertext (no IV used in ECB).
+// Parameters:
+//   - key: 16, 24, or 32 bytes (AES-128, 192, or 256).
+//   - plaintext: Data to be encrypted.
+//
+// Returns: ciphertext (no IV used in ECB).
 func EncryptECB(key, plaintext []byte) ([]byte, error) {
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
-	}
-
-	block, err := aes.NewCipher(key)
+	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +35,14 @@ func EncryptECB(key, plaintext []byte) ([]byte, error) {
 }
 
 // DecryptECB decrypts ciphertext produced by EncryptECB and removes PKCS#7 padding.
+//
+// Parameters:
+//   - key: same key used for encryption.
+//   - ciphertext: Data to be decrypted.
+//
+// Returns: decrypted plaintext (unpadded).
 func DecryptECB(key, ciphertext []byte) ([]byte, error) {
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
-	}
-
-	block, err := aes.NewCipher(key)
+	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}

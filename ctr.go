@@ -1,14 +1,13 @@
 package goaes
 
 import (
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
 	"io"
 )
 
-// EncryptCTR encrypts plaintext using AES in CTR mode.
+// EncryptCTR encrypts plaintext using AES in CTR mode (Counter Mode).
 //
 // NIST SP 800-38A Warning: This mode provides Confidentiality ONLY.
 // It is malleable: bit-flipping attacks on ciphertext will directly flip bits in plaintext.
@@ -16,13 +15,13 @@ import (
 //
 // Recommendation: Use EncryptGCM (AEAD) instead.
 //
-// Returns IV prepended to ciphertext (iv||ciphertext).
+// Parameters:
+//   - key: 16, 24, or 32 bytes (AES-128, 192, or 256).
+//   - plaintext: Data to be encrypted.
+//
+// Returns: IV prepended to ciphertext (iv||ciphertext).
 func EncryptCTR(key, plaintext []byte) ([]byte, error) {
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
-	}
-
-	block, err := aes.NewCipher(key)
+	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}
@@ -43,13 +42,16 @@ func EncryptCTR(key, plaintext []byte) ([]byte, error) {
 	return out, nil
 }
 
-// DecryptCTR decrypts data produced by EncryptCTR (expects iv prepended).
+// DecryptCTR decrypts data produced by EncryptCTR.
+// It expects the IV to be prepended to the ciphertext.
+//
+// Parameters:
+//   - key: same key used for encryption.
+//   - ciphertext: iv||ciphertext.
+//
+// Returns: decrypted plaintext.
 func DecryptCTR(key, ciphertext []byte) ([]byte, error) {
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, errors.New("invalid key size: must be 16, 24, or 32 bytes")
-	}
-
-	block, err := aes.NewCipher(key)
+	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}

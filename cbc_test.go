@@ -40,3 +40,17 @@ func TestAESCBC_EncryptDecrypt(t *testing.T) {
 		}
 	}
 }
+func TestAESCBC_InvalidKey(t *testing.T) {
+	key := []byte("invalid-key") // 11 bytes
+	plaintext := []byte("secret")
+
+	_, err := goaes.EncryptCBC(key, plaintext)
+	if err == nil {
+		t.Error("expected error for invalid key size in EncryptCBC")
+	}
+
+	_, err = goaes.DecryptCBC(key, []byte("iv-and-ct-that-is-too-short"))
+	if err == nil {
+		t.Error("expected error for invalid key size in DecryptCBC")
+	}
+}

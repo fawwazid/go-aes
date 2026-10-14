@@ -20,14 +20,6 @@ func TestAESXTS_EncryptDecrypt(t *testing.T) {
 			}
 			return k
 		}(),
-		// 48 bytes -> AES-192 XTS
-		func() []byte {
-			k := make([]byte, 48)
-			for i := 0; i < 48; i++ {
-				k[i] = byte(i)
-			}
-			return k
-		}(),
 		// 64 bytes -> AES-256 XTS
 		func() []byte {
 			k := make([]byte, 64)
@@ -62,5 +54,21 @@ func TestAESXTS_EncryptDecrypt(t *testing.T) {
 		if bytes.Equal(pt2, plaintext) {
 			t.Fatalf("expected tampered ciphertext to produce different plaintext for key len %d", len(totalKey))
 		}
+	}
+}
+
+func TestAESXTS_NISTConstraints(t *testing.T) {
+	validKey := make([]byte, 32)
+	validKey[len(validKey)-1] = 1
+	invalidKey := make([]byte, 48)
+
+	for _, data := range [][]byte{nil, make([]byte, 15), make([]byte, goaes.MaxXTSDataUnitSize+16)} {
+		if _, err := goaes.EncryptXTS(validKey, data, 0); err == nil {
+			t.Errorf("EncryptXTS accepted invalid data-unit length %d", len(data))
+		}
+	}
+
+	if _, err := goaes.EncryptXTS(invalidKey, make([]byte, 16), 0); err == nil {
+		t.Error("EncryptXTS accepted XTS-AES-192, which SP 800-38E does not approve")
 	}
 }

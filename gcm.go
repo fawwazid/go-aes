@@ -7,10 +7,20 @@ import (
 	"io"
 )
 
+const (
+	// MaxGCMRandomNonceInvocations is the SP 800-38D per-key limit when
+	// 96-bit nonces are generated randomly. Callers must rotate the key before
+	// reaching this limit; this stateless package cannot count invocations.
+	MaxGCMRandomNonceInvocations uint64 = 1 << 32
+	maxGCMPlaintextSize          uint64 = (1 << 36) - 32
+)
+
 // EncryptGCM encrypts plaintext using AES-GCM (Galois/Counter Mode).
 //
 // NIST SP 800-38D Recommendation: Authenticated Encryption (AEAD).
 // This mode provides both confidentiality and authenticity (AEAD).
+// EncryptGCM uses a random 96-bit nonce and a 128-bit tag. SP 800-38D limits
+// this construction to MaxGCMRandomNonceInvocations encryptions per key.
 //
 // Parameters:
 //   - key: 16/24/32 bytes (AES-128/192/256). Use 32 bytes for top security.
@@ -19,6 +29,9 @@ import (
 //
 // Returns: nonce||ciphertext
 func EncryptGCM(key, plaintext, aad []byte) ([]byte, error) {
+	if uint64(len(plaintext)) > maxGCMPlaintextSize {
+		return nil, errors.New("plaintext exceeds the AES-GCM size limit")
+	}
 	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
@@ -69,6 +82,12 @@ func DecryptGCM(key, ciphertext, aad []byte) ([]byte, error) {
 
 	nonce := ciphertext[:nonceSize]
 	ct := ciphertext[nonceSize:]
+	if len(ct) < gcm.Overhead() {
+		return nil, errors.New("ciphertext too short")
+	}
+	if uint64(len(ct)-gcm.Overhead()) > maxGCMPlaintextSize {
+		return nil, errors.New("ciphertext exceeds the AES-GCM size limit")
+	}
 
 	pt, err := gcm.Open(nil, nonce, ct, aad)
 	if err != nil {

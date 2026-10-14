@@ -19,6 +19,8 @@ import (
 //   - plaintext: Data to be encrypted.
 //
 // Returns: IV prepended to ciphertext (iv||ciphertext).
+//
+// Deprecated: Use EncryptGCM. CFB does not authenticate ciphertext.
 func EncryptCFB(key, plaintext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {
@@ -49,6 +51,8 @@ func EncryptCFB(key, plaintext []byte) ([]byte, error) {
 //   - ciphertext: iv||ciphertext.
 //
 // Returns: decrypted plaintext.
+//
+// Deprecated: Use DecryptGCM. CFB does not authenticate ciphertext.
 func DecryptCFB(key, ciphertext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {

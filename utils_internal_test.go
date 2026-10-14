@@ -171,6 +171,11 @@ func TestValidateKeySize(t *testing.T) {
 
 // TestValidateXTSKeySize tests the validateXTSKeySize function with valid and invalid XTS keys.
 func TestValidateXTSKeySize(t *testing.T) {
+	distinctKey := func(size int) []byte {
+		key := make([]byte, size)
+		key[len(key)-1] = 1
+		return key
+	}
 	tests := []struct {
 		name    string
 		key     []byte
@@ -178,18 +183,23 @@ func TestValidateXTSKeySize(t *testing.T) {
 	}{
 		{
 			name:    "valid 32-byte XTS key (AES-128)",
-			key:     make([]byte, 32),
+			key:     distinctKey(32),
 			wantErr: false,
 		},
 		{
-			name:    "valid 48-byte XTS key (AES-192)",
+			name:    "invalid 48-byte XTS key (AES-192)",
 			key:     make([]byte, 48),
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "valid 64-byte XTS key (AES-256)",
-			key:     make([]byte, 64),
+			key:     distinctKey(64),
 			wantErr: false,
+		},
+		{
+			name:    "invalid identical XTS component keys",
+			key:     make([]byte, 32),
+			wantErr: true,
 		},
 		{
 			name:    "invalid nil key",

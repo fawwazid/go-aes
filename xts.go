@@ -2,18 +2,22 @@ package goaes
 
 import (
 	"crypto/aes"
-	"errors"
 
 	"golang.org/x/crypto/xts"
 )
+
+// MaxXTSDataUnitSize is the SP 800-38E limit of 2^20 AES blocks.
+const MaxXTSDataUnitSize = (1 << 20) * aes.BlockSize
 
 // EncryptXTS encrypts plaintext using AES-XTS.
 //
 // NIST SP 800-38E Recommendation: Approved for Storage Devices (Data-at-Rest) ONLY.
 // NOT intended for General Purpose encryption or Data-in-Transit.
+// This implementation handles complete AES blocks only and does not implement
+// ciphertext stealing.
 //
 // Parameters:
-//   - key: twice the length of the underlying AES key (32, 48 or 64 bytes).
+//   - key: 32 bytes for XTS-AES-128 or 64 bytes for XTS-AES-256.
 //   - plaintext: Data to be encrypted (must be multiple of 16 bytes).
 //   - sectorNum: the tweak (typically the sector or block number).
 //
@@ -28,8 +32,8 @@ func EncryptXTS(key, plaintext []byte, sectorNum uint64) ([]byte, error) {
 		return nil, err
 	}
 
-	if len(plaintext)%16 != 0 {
-		return nil, errors.New("plaintext length must be a multiple of 16 bytes for XTS")
+	if err := validateXTSDataUnit(len(plaintext)); err != nil {
+		return nil, err
 	}
 
 	out := make([]byte, len(plaintext))
@@ -55,8 +59,8 @@ func DecryptXTS(key, ciphertext []byte, sectorNum uint64) ([]byte, error) {
 		return nil, err
 	}
 
-	if len(ciphertext)%16 != 0 {
-		return nil, errors.New("ciphertext length must be a multiple of 16 bytes for XTS")
+	if err := validateXTSDataUnit(len(ciphertext)); err != nil {
+		return nil, err
 	}
 
 	out := make([]byte, len(ciphertext))

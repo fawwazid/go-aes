@@ -18,6 +18,8 @@ import (
 //   - plaintext: Data to be encrypted.
 //
 // Returns: IV prepended to ciphertext (iv||ciphertext).
+//
+// Deprecated: Use EncryptGCM. OFB does not authenticate ciphertext.
 func EncryptOFB(key, plaintext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {
@@ -48,6 +50,8 @@ func EncryptOFB(key, plaintext []byte) ([]byte, error) {
 //   - ciphertext: iv||ciphertext.
 //
 // Returns: decrypted plaintext.
+//
+// Deprecated: Use DecryptGCM. OFB does not authenticate ciphertext.
 func DecryptOFB(key, ciphertext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {

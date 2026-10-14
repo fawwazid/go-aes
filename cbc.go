@@ -3,7 +3,6 @@ package goaes
 import (
 	"crypto/cipher"
 	"crypto/rand"
-	"errors"
 	"io"
 )
 
@@ -20,6 +19,8 @@ import (
 //   - plaintext: Data to be encrypted.
 //
 // Returns: IV prepended to ciphertext (iv||ciphertext).
+//
+// Deprecated: Use EncryptGCM. CBC does not authenticate ciphertext.
 func EncryptCBC(key, plaintext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {
@@ -52,6 +53,8 @@ func EncryptCBC(key, plaintext []byte) ([]byte, error) {
 //   - ciphertext: iv||ciphertext.
 //
 // Returns: decrypted plaintext (unpadded).
+//
+// Deprecated: Use DecryptGCM. CBC does not authenticate ciphertext.
 func DecryptCBC(key, ciphertext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {
@@ -60,19 +63,23 @@ func DecryptCBC(key, ciphertext []byte) ([]byte, error) {
 
 	bs := block.BlockSize()
 	if len(ciphertext) < bs {
-		return nil, errors.New("ciphertext too short")
+		return nil, ErrInvalidCiphertext
 	}
 
 	iv := ciphertext[:bs]
 	ct := ciphertext[bs:]
 
 	if len(ct)%bs != 0 {
-		return nil, errors.New("ciphertext is not a multiple of block size")
+		return nil, ErrInvalidCiphertext
 	}
 
 	pt := make([]byte, len(ct))
 	mode := cipher.NewCBCDecrypter(block, iv)
 	mode.CryptBlocks(pt, ct)
 
-	return pkcs7Unpad(pt, bs)
+	plaintext, err := pkcs7Unpad(pt, bs)
+	if err != nil {
+		return nil, ErrInvalidCiphertext
+	}
+	return plaintext, nil
 }

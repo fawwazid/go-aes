@@ -1,9 +1,5 @@
 package goaes
 
-import (
-	"errors"
-)
-
 // EncryptECB encrypts plaintext using AES in ECB mode with PKCS#7 padding.
 //
 // NIST SP 800-38A Warning: INSECURE MODE.
@@ -17,6 +13,8 @@ import (
 //   - plaintext: Data to be encrypted.
 //
 // Returns: ciphertext (no IV used in ECB).
+//
+// Deprecated: Use EncryptGCM. ECB reveals plaintext patterns and provides no authentication.
 func EncryptECB(key, plaintext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {
@@ -41,6 +39,8 @@ func EncryptECB(key, plaintext []byte) ([]byte, error) {
 //   - ciphertext: Data to be decrypted.
 //
 // Returns: decrypted plaintext (unpadded).
+//
+// Deprecated: Use DecryptGCM. ECB reveals plaintext patterns and provides no authentication.
 func DecryptECB(key, ciphertext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {
@@ -49,7 +49,7 @@ func DecryptECB(key, ciphertext []byte) ([]byte, error) {
 
 	bs := block.BlockSize()
 	if len(ciphertext) == 0 || len(ciphertext)%bs != 0 {
-		return nil, errors.New("ciphertext is not a multiple of the block size")
+		return nil, ErrInvalidCiphertext
 	}
 
 	pt := make([]byte, len(ciphertext))
@@ -57,5 +57,9 @@ func DecryptECB(key, ciphertext []byte) ([]byte, error) {
 		block.Decrypt(pt[i:i+bs], ciphertext[i:i+bs])
 	}
 
-	return pkcs7Unpad(pt, bs)
+	plaintext, err := pkcs7Unpad(pt, bs)
+	if err != nil {
+		return nil, ErrInvalidCiphertext
+	}
+	return plaintext, nil
 }

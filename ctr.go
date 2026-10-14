@@ -20,6 +20,8 @@ import (
 //   - plaintext: Data to be encrypted.
 //
 // Returns: IV prepended to ciphertext (iv||ciphertext).
+//
+// Deprecated: Use EncryptGCM. CTR does not authenticate ciphertext.
 func EncryptCTR(key, plaintext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {
@@ -50,6 +52,8 @@ func EncryptCTR(key, plaintext []byte) ([]byte, error) {
 //   - ciphertext: iv||ciphertext.
 //
 // Returns: decrypted plaintext.
+//
+// Deprecated: Use DecryptGCM. CTR does not authenticate ciphertext.
 func DecryptCTR(key, ciphertext []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {

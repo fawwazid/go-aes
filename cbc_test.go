@@ -2,6 +2,7 @@ package goaes_test
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	goaes "github.com/fawwazid/go-aes"
@@ -37,6 +38,20 @@ func TestAESCBC_EncryptDecrypt(t *testing.T) {
 		_, err = goaes.DecryptCBC(key, bad)
 		if err == nil {
 			t.Fatalf("expected decryption error for tampered ciphertext (key len %d)", k)
+		}
+	}
+}
+
+func TestAESCBC_InvalidCiphertextUsesGenericError(t *testing.T) {
+	key := make([]byte, 16)
+	for _, ciphertext := range [][]byte{
+		make([]byte, 15),
+		make([]byte, 17),
+		make([]byte, 32),
+	} {
+		_, err := goaes.DecryptCBC(key, ciphertext)
+		if !errors.Is(err, goaes.ErrInvalidCiphertext) {
+			t.Errorf("DecryptCBC error = %v, want ErrInvalidCiphertext", err)
 		}
 	}
 }

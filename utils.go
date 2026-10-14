@@ -4,11 +4,16 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"io"
 )
+
+// ErrInvalidCiphertext is returned when unauthenticated legacy ciphertext is
+// malformed. A single error prevents callers from exposing padding validity.
+var ErrInvalidCiphertext = errors.New("invalid ciphertext")
 
 // GenerateKey returns a random key of the specified byte length.
 // Allowed AES key lengths are 16 (AES-128), 24 (AES-192), or 32 (AES-256) bytes.
@@ -74,27 +79,26 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 }
 
 // GenerateXTSKeyForAES generates a combined XTS key for AES-XTS.
-// `bits` is the AES key size in bits (128, 192, 256). The returned key
-// length will be twice the AES key length (32, 48, 64 bytes).
+// bits is the per-key AES size. NIST SP 800-38E approves XTS-AES-128
+// and XTS-AES-256, producing combined keys of 32 and 64 bytes.
 func GenerateXTSKeyForAES(bits int) ([]byte, error) {
-	perKeyBytes, err := aesKeyBytesFromBits(bits)
-	if err != nil {
-		return nil, err
-	}
-	return GenerateRandomBytes(perKeyBytes * 2)
-}
-
-// aesKeyBytesFromBits maps AES bit sizes to key byte lengths.
-func aesKeyBytesFromBits(bits int) (int, error) {
+	var combinedKeyBytes int
 	switch bits {
 	case 128:
-		return 16, nil
-	case 192:
-		return 24, nil
+		combinedKeyBytes = 32
 	case 256:
-		return 32, nil
+		combinedKeyBytes = 64
 	default:
-		return 0, errors.New("invalid AES bits: must be 128, 192, or 256")
+		return nil, errors.New("invalid XTS-AES bits: must be 128 or 256")
+	}
+	for {
+		key, err := GenerateRandomBytes(combinedKeyBytes)
+		if err != nil {
+			return nil, err
+		}
+		if subtle.ConstantTimeCompare(key[:len(key)/2], key[len(key)/2:]) != 1 {
+			return key, nil
+		}
 	}
 }
 
@@ -119,10 +123,29 @@ func validateKeySizeLength(length int) error {
 	return nil
 }
 
-// validateXTSKeySize checks if the key size is valid for AES-XTS (32, 48, or 64 bytes).
+// validateXTSKeySize checks NIST-approved XTS-AES key sizes.
 func validateXTSKeySize(key []byte) error {
-	if len(key) != 32 && len(key) != 48 && len(key) != 64 {
-		return errors.New("invalid XTS key size: must be 32, 48, or 64 bytes")
+	if len(key) != 32 && len(key) != 64 {
+		return errors.New("invalid XTS key size: must be 32 or 64 bytes")
+	}
+	if subtle.ConstantTimeCompare(key[:len(key)/2], key[len(key)/2:]) == 1 {
+		return errors.New("invalid XTS key: the two component keys must be distinct")
+	}
+	return nil
+}
+
+// validateXTSDataUnit enforces the SP 800-38E data-unit limit. This package's
+// XTS backend does not implement ciphertext stealing, so only complete blocks
+// are supported.
+func validateXTSDataUnit(length int) error {
+	if length < aes.BlockSize {
+		return errors.New("XTS data unit must contain at least one AES block")
+	}
+	if length%aes.BlockSize != 0 {
+		return errors.New("XTS data unit length must be a multiple of 16 bytes")
+	}
+	if length > MaxXTSDataUnitSize {
+		return errors.New("XTS data unit exceeds the NIST limit of 2^20 AES blocks")
 	}
 	return nil
 }
@@ -153,14 +176,14 @@ func pkcs7Unpad(data []byte, blockSize int) ([]byte, error) {
 		return nil, errors.New("invalid padded data length")
 	}
 	pad := int(data[len(data)-1])
-	if pad == 0 || pad > blockSize {
-		return nil, errors.New("invalid padding size")
+	valid := subtle.ConstantTimeLessOrEq(1, pad) & subtle.ConstantTimeLessOrEq(pad, blockSize)
+	for i := 0; i < blockSize; i++ {
+		inPadding := subtle.ConstantTimeLessOrEq(i+1, pad)
+		equal := subtle.ConstantTimeByteEq(data[len(data)-1-i], byte(pad))
+		valid &= subtle.ConstantTimeSelect(inPadding, equal, 1)
 	}
-	// verify padding bytes
-	for i := len(data) - pad; i < len(data); i++ {
-		if int(data[i]) != pad {
-			return nil, errors.New("invalid padding")
-		}
+	if valid != 1 {
+		return nil, errors.New("invalid PKCS#7 padding")
 	}
 	return data[:len(data)-pad], nil
 }

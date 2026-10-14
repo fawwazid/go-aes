@@ -2,6 +2,7 @@ package goaes_test
 
 import (
 	"bytes"
+	"encoding/hex"
 	"testing"
 
 	goaes "github.com/fawwazid/go-aes"
@@ -39,6 +40,30 @@ func TestAESGCM_EncryptDecrypt(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected decryption error for tampered ciphertext (key len %d)", k)
 		}
+	}
+}
+
+// TestAESGCM_NISTKnownAnswer checks a vector from NIST SP 800-38D, Test Case 2.
+func TestAESGCM_NISTKnownAnswer(t *testing.T) {
+	decode := func(s string) []byte {
+		b, err := hex.DecodeString(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return b
+	}
+
+	key := make([]byte, 16)
+	nonce := make([]byte, 12)
+	ciphertextAndTag := decode("0388dace60b6a392f328c2b971b2fe78ab6e47d42cec13bdf53a67b21257bddf")
+	input := append(nonce, ciphertextAndTag...)
+
+	plaintext, err := goaes.DecryptGCM(key, input, nil)
+	if err != nil {
+		t.Fatalf("DecryptGCM failed NIST known-answer test: %v", err)
+	}
+	if !bytes.Equal(plaintext, make([]byte, 16)) {
+		t.Fatalf("DecryptGCM plaintext = %x, want 16 zero bytes", plaintext)
 	}
 }
 func TestAESGCM_InvalidKey(t *testing.T) {

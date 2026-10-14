@@ -33,6 +33,26 @@ func TestGenerateAESKey(t *testing.T) {
 	}
 }
 
+func TestGenerateXTSKeyForAES(t *testing.T) {
+	for _, tt := range []struct {
+		bits    int
+		wantLen int
+		wantErr bool
+	}{
+		{128, 32, false},
+		{192, 0, true},
+		{256, 64, false},
+	} {
+		key, err := goaes.GenerateXTSKeyForAES(tt.bits)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("GenerateXTSKeyForAES(%d) error = %v, wantErr %v", tt.bits, err, tt.wantErr)
+		}
+		if err == nil && len(key) != tt.wantLen {
+			t.Errorf("GenerateXTSKeyForAES(%d) length = %d, want %d", tt.bits, len(key), tt.wantLen)
+		}
+	}
+}
+
 func TestGenerateNonce(t *testing.T) {
 	tests := []struct {
 		size    int

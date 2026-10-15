@@ -1,7 +1,6 @@
 # Go - Advanced Encryption Standard (AES)
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/fawwazid/go-aes.svg)](https://pkg.go.dev/github.com/fawwazid/go-aes)
-[![Go Report Card](https://goreportcard.com/badge/github.com/fawwazid/go-aes)](https://goreportcard.com/report/github.com/fawwazid/go-aes)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Go library providing AES helpers based on modes specified in the NIST SP 800-38 series. This package has not undergone CAVP or FIPS 140-3 validation.

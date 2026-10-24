@@ -9,20 +9,13 @@ import (
 // MaxXTSDataUnitSize is the SP 800-38E limit of 2^20 AES blocks.
 const MaxXTSDataUnitSize = (1 << 20) * aes.BlockSize
 
-// EncryptXTS encrypts plaintext using AES-XTS.
-//
-// NIST SP 800-38E Recommendation: Approved for Storage Devices (Data-at-Rest) ONLY.
-// NOT intended for General Purpose encryption or Data-in-Transit.
-// This implementation handles complete AES blocks only and does not implement
-// ciphertext stealing.
-//
-// Parameters:
-//   - key: 32 bytes for XTS-AES-128 or 64 bytes for XTS-AES-256.
-//   - plaintext: Data to be encrypted (must be multiple of 16 bytes).
-//   - sectorNum: the tweak (typically the sector or block number).
-//
-// Returns: ciphertext.
+// EncryptXTS encrypts a storage data unit with a 32- or 64-byte combined key.
+// Plaintext must contain complete AES blocks; sectorNum identifies the data unit.
+// XTS provides no authentication and is unavailable in FIPS mode.
 func EncryptXTS(key, plaintext []byte, sectorNum uint64) ([]byte, error) {
+	if err := checkNonFIPSOperation(); err != nil {
+		return nil, err
+	}
 	if err := validateXTSKeySize(key); err != nil {
 		return nil, err
 	}
@@ -41,15 +34,11 @@ func EncryptXTS(key, plaintext []byte, sectorNum uint64) ([]byte, error) {
 	return out, nil
 }
 
-// DecryptXTS decrypts ciphertext produced by EncryptXTS.
-//
-// Parameters:
-//   - key: same key used for encryption.
-//   - ciphertext: Data to be decrypted.
-//   - sectorNum: same sector number used for encryption.
-//
-// Returns: decrypted plaintext.
+// DecryptXTS decrypts EncryptXTS output using the same key and sector number.
 func DecryptXTS(key, ciphertext []byte, sectorNum uint64) ([]byte, error) {
+	if err := checkNonFIPSOperation(); err != nil {
+		return nil, err
+	}
 	if err := validateXTSKeySize(key); err != nil {
 		return nil, err
 	}

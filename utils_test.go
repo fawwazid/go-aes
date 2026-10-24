@@ -3,7 +3,7 @@ package goaes_test
 import (
 	"testing"
 
-	goaes "github.com/fawwazid/go-aes"
+	goaes "github.com/fawwazid/go-aes/v2"
 )
 
 func TestGenerateAESKey(t *testing.T) {

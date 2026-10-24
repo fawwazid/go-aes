@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	goaes "github.com/fawwazid/go-aes"
+	goaes "github.com/fawwazid/go-aes/v2"
 )
 
 func TestAESXTS_EncryptDecrypt(t *testing.T) {

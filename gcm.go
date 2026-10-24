@@ -2,9 +2,7 @@ package goaes
 
 import (
 	"crypto/cipher"
-	"crypto/rand"
 	"errors"
-	"io"
 )
 
 const (
@@ -15,19 +13,10 @@ const (
 	maxGCMPlaintextSize          uint64 = (1 << 36) - 32
 )
 
-// EncryptGCM encrypts plaintext using AES-GCM (Galois/Counter Mode).
-//
-// NIST SP 800-38D Recommendation: Authenticated Encryption (AEAD).
-// This mode provides both confidentiality and authenticity (AEAD).
-// EncryptGCM uses a random 96-bit nonce and a 128-bit tag. SP 800-38D limits
-// this construction to MaxGCMRandomNonceInvocations encryptions per key.
-//
-// Parameters:
-//   - key: 16/24/32 bytes (AES-128/192/256). Use 32 bytes for top security.
-//   - plaintext: Data to be encrypted.
-//   - aad: Additional Authenticated Data (optional, can be nil). PROOF of integrity, not encrypted.
-//
-// Returns: nonce||ciphertext
+// EncryptGCM returns nonce || ciphertext || tag using AES-GCM.
+// The key must contain 16, 24, or 32 bytes. Optional AAD is authenticated,
+// not encrypted. A random 96-bit nonce and 128-bit tag are included.
+// Rotate the key before MaxGCMRandomNonceInvocations encryptions.
 func EncryptGCM(key, plaintext, aad []byte) ([]byte, error) {
 	if uint64(len(plaintext)) > maxGCMPlaintextSize {
 		return nil, errors.New("plaintext exceeds the AES-GCM size limit")
@@ -37,61 +26,32 @@ func EncryptGCM(key, plaintext, aad []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	gcm, err := cipher.NewGCM(block)
+	gcm, err := cipher.NewGCMWithRandomNonce(block)
 	if err != nil {
 		return nil, err
 	}
 
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, err
-	}
-
-	ct := gcm.Seal(nil, nonce, plaintext, aad)
-
-	out := make([]byte, 0, len(nonce)+len(ct))
-	out = append(out, nonce...)
-	out = append(out, ct...)
-	return out, nil
+	return gcm.Seal(nil, nil, plaintext, aad), nil
 }
 
-// DecryptGCM decrypts data produced by EncryptGCM.
-// It expects the nonce to be prepended to the ciphertext.
-//
-// Parameters:
-//   - key: same key used for encryption.
-//   - ciphertext: nonce||ciphertext.
-//   - aad: same additional data used for encryption.
-//
-// Returns: decrypted plaintext.
+// DecryptGCM verifies and decrypts EncryptGCM output using the same key and AAD.
 func DecryptGCM(key, ciphertext, aad []byte) ([]byte, error) {
 	block, err := newCipherBlock(key)
 	if err != nil {
 		return nil, err
 	}
 
-	gcm, err := cipher.NewGCM(block)
+	gcm, err := cipher.NewGCMWithRandomNonce(block)
 	if err != nil {
 		return nil, err
 	}
 
-	nonceSize := gcm.NonceSize()
-	if len(ciphertext) < nonceSize {
+	if len(ciphertext) < gcm.Overhead() {
 		return nil, errors.New("ciphertext too short")
 	}
-
-	nonce := ciphertext[:nonceSize]
-	ct := ciphertext[nonceSize:]
-	if len(ct) < gcm.Overhead() {
-		return nil, errors.New("ciphertext too short")
-	}
-	if uint64(len(ct)-gcm.Overhead()) > maxGCMPlaintextSize {
+	if uint64(len(ciphertext)-gcm.Overhead()) > maxGCMPlaintextSize {
 		return nil, errors.New("ciphertext exceeds the AES-GCM size limit")
 	}
 
-	pt, err := gcm.Open(nil, nonce, ct, aad)
-	if err != nil {
-		return nil, err
-	}
-	return pt, nil
+	return gcm.Open(nil, nil, ciphertext, aad)
 }

@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	goaes "github.com/fawwazid/go-aes"
+	goaes "github.com/fawwazid/go-aes/v2"
 )
 
 func TestAESGCM_EncryptDecrypt(t *testing.T) {

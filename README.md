@@ -36,7 +36,8 @@ func main() {
   Only storage data units made of complete 16-byte blocks are supported.
   Maximum data unit: 2^20 blocks. XTS provides no authentication.
 - Key/random helpers: `GenerateKey`, `GenerateAESKey`, `GenerateRandomBytes`,
-  and `GenerateNonce`. GCM generates its own nonce internally.
+  and `GenerateNonce`. `GenerateRandomBytes` is capped at 1 MiB. GCM generates
+  its own nonce internally.
 - Encoding: `EncodeBase64`, `DecodeBase64`, `HexEncode`, `HexDecode`.
 
 Rotate GCM keys before 2^32 encryptions, accounting for all instances sharing

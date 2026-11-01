@@ -49,3 +49,4 @@ changes. Do not create or edit changelogs; Release Please generates them.
   Please opens or updates a release pull request; merge that generated PR to
   create the version tag and GitHub release.
 - Never create or edit changelogs manually; Release Please generates them.
+- Keep the temporary `last-release-sha` at the v2 preparation commit during this rollout: the existing v2.0.0 tag is not on `main` history. After the first generated v2.0.1 release PR is merged and tagged, remove this fixed marker in a chore PR so later releases track the latest tag automatically.

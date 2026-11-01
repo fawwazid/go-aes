@@ -38,3 +38,14 @@ changes. Do not create or edit changelogs; Release Please generates them.
 
 - `utils_test.go` covers invalid random-byte sizes and the valid small-size
   case, including the public allocation limit.
+
+## Release workflow
+
+- Use Conventional Commit pull request titles so squash merges produce the
+  intended SemVer bump: `fix:` for patch, `feat:` for minor, and `!` or
+  `BREAKING CHANGE:` for major. Use `fix(security):` for security fixes;
+  `security:` alone does not bump a version.
+- `docs:`, `test:`, `chore:`, and `ci:` do not trigger a release. Release
+  Please opens or updates a release pull request; merge that generated PR to
+  create the version tag and GitHub release.
+- Never create or edit changelogs manually; Release Please generates them.

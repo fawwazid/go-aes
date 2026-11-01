@@ -44,6 +44,23 @@ Rotate GCM keys before 2^32 encryptions, accounting for all instances sharing
 the key. XTS requires distinct key halves and a data-unit-specific sector number.
 The external XTS implementation returns `ErrFIPSUnsupported` in FIPS mode.
 
+## Semantic versioning
+
+Releases use Semantic Versioning through Release Please. A push to `main`
+opens or updates a release pull request. Merging that generated pull request
+creates the version tag and GitHub release.
+
+Use Conventional Commits in pull request titles (the squash-merge message):
+
+- `fix: ...`, including `fix(security): ...`, creates a patch release.
+- `feat: ...` creates a minor release.
+- `fix!: ...`, `feat!: ...`, or a `BREAKING CHANGE:` footer creates a
+  major release.
+- `docs:`, `test:`, `chore:`, and `ci:` do not trigger a release.
+
+A `security:` commit appears under Security in generated release notes, but
+does not trigger a version bump by itself. Do not edit the generated changelog
+manually.
 ## Breaking changes
 
 CBC, CFB, CTR, OFB, ECB, PKCS#7 padding helpers, and their error surface have

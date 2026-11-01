@@ -10,6 +10,10 @@ import (
 	"errors"
 )
 
+// MaxRandomBytes bounds allocations made by GenerateRandomBytes and helpers
+// that accept an arbitrary output length.
+const MaxRandomBytes = 1 << 20
+
 // GenerateKey returns a random key of the specified byte length.
 // Allowed AES key lengths are 16 (AES-128), 24 (AES-192), or 32 (AES-256) bytes.
 func GenerateKey(size int) ([]byte, error) {
@@ -55,10 +59,11 @@ func DecodeBase64(s string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(s)
 }
 
-// GenerateRandomBytes returns n bytes from crypto/rand.
+// GenerateRandomBytes returns n bytes from crypto/rand. n must not exceed
+// MaxRandomBytes.
 func GenerateRandomBytes(n int) ([]byte, error) {
-	if n <= 0 {
-		return nil, errors.New("length must be positive")
+	if n <= 0 || n > MaxRandomBytes {
+		return nil, errors.New("length must be between 1 and MaxRandomBytes")
 	}
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {

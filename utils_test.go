@@ -80,6 +80,18 @@ func TestGenerateNonce(t *testing.T) {
 	}
 }
 
+func TestGenerateRandomBytesLimits(t *testing.T) {
+	for _, size := range []int{0, -1, goaes.MaxRandomBytes + 1} {
+		if _, err := goaes.GenerateRandomBytes(size); err == nil {
+			t.Errorf("GenerateRandomBytes(%d) accepted an invalid size", size)
+		}
+	}
+	value, err := goaes.GenerateRandomBytes(1)
+	if err != nil || len(value) != 1 {
+		t.Fatalf("GenerateRandomBytes(1) = %d bytes, %v", len(value), err)
+	}
+}
+
 func TestBase64Helpers(t *testing.T) {
 	data := []byte("hello world")
 	encoded := goaes.EncodeBase64(data)

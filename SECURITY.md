@@ -7,12 +7,11 @@ and a 128-bit authentication tag. Rotate the key before 2^32 encryptions across
 all processes. AES-XTS is only for complete-block storage data units, provides
 no authentication, and returns ErrFIPSUnsupported in FIPS mode because this
 implementation is outside the validated boundary. CBC, CFB, CTR, OFB, ECB,
-and PKCS#7 padding implementations are absent.
+and PKCS#7 padding implementations are absent. GenerateRandomBytes and
+GenerateNonce reject requests larger than 1 MiB.
 
-This release removes source and behavior compatibility with the APIs listed
-under Breaking changes in README.md. Unsupported inputs are rejected.
-Applications must replace unsupported records or enrollments before upgrading;
-this library does not provide conversion or permissive verification helpers.
+Review the Breaking changes section in README.md before upgrading. Removed APIs
+and unsupported inputs have no compatibility fallback or conversion helper.
 
 ## FIPS deployment
 
@@ -23,7 +22,7 @@ for its caller.
 
 The baseline is Go 1.27.3. The frozen Go module v1.0.0 corresponds to
 [CMVP certificate 5247](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/5247),
-checked active on 2026-10-24. Review certificate status and operating-environment
+checked active on 2026-11-01. Review certificate status and operating-environment
 coverage before deployment. A consuming application can build with
 GOFIPS140=v1.0.0 and must not override it with fips140=off.
 The strict only setting below is an assessment aid, not a production setting.
@@ -51,9 +50,8 @@ In PowerShell, set the variables with
 `'fips140=only'`, then run the go test command. Restore the original environment
 after checking.
 
-CI is configured for Windows and Linux, including Linux race detection.
-Local validation is limited to the platform and commands actually executed;
-see the workspace SECURITY_REVIEW.md for the recorded results.
+Run these checks on the target operating systems and Go version used for
+deployment, and record the environment and results in your project review.
 
 ## References
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.1](https://github.com/fawwazid/go-aes/compare/v2.0.0...v2.0.1) (2026-11-01)
+
+
+### Bug Fixes
+
+* **release:** anchor v2 patch releases to current history ([#21](https://github.com/fawwazid/go-aes/issues/21)) ([a8764b7](https://github.com/fawwazid/go-aes/commit/a8764b7b8ed7a994f45e63fe737e7e00a03e6b92))
+* **release:** configure semantic versioning ([#19](https://github.com/fawwazid/go-aes/issues/19)) ([7103e54](https://github.com/fawwazid/go-aes/commit/7103e54010b6d3ad4533b0940d4b22357aa0782e))
+
+
+### Chores
+
+* configure Google Release Please ([6e3d692](https://github.com/fawwazid/go-aes/commit/6e3d692aa021b002c84b800c2d50ca0239cfbeab))
+* reset Release Please baseline ([db4a934](https://github.com/fawwazid/go-aes/commit/db4a934e836ad8abe4588bbb88c12ad0d114ef76))
+
 ## v2.0.0 — 2026-10-24
 
 Keep authenticated GCM and storage-specific XTS; remove obsolete AES modes.

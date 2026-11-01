@@ -23,3 +23,19 @@ Keep authenticated GCM and storage-specific XTS; remove obsolete AES modes.
 ```sh
 go get github.com/fawwazid/go-aes/v2@v2.0.0
 ```
+
+## v1.1.1 — 2026-10-14
+
+- Harden AES mode constraints and NIST guidance; update `golang.org/x/crypto`.
+
+## v1.1.0 — 2025-12-29
+
+- Improve ciphertext comparison coverage and use idiomatic byte-slice comparison.
+
+## v1.0.1 — 2025-12-08
+
+- Correct the release type in the original Release Please configuration.
+
+## v1.0.0 — 2025-11-26
+
+- Initial release with AES modes and tests.

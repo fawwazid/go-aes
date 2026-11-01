@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.0.0](https://github.com/fawwazid/go-aes/compare/v2.0.0...v3.0.0) (2026-11-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* prepare v2 security refactor ([#16](https://github.com/fawwazid/go-aes/issues/16))
+
+### Features
+
+* **aes:** initial implementation of AES modes and tests ([1d9e59a](https://github.com/fawwazid/go-aes/commit/1d9e59a648d1340041579603de53ee37ededacf4))
+* prepare v2 security refactor ([#16](https://github.com/fawwazid/go-aes/issues/16)) ([402c459](https://github.com/fawwazid/go-aes/commit/402c4592ec1257fa030dd92a55c56a0032abbaaf))
+
+
+### Bug Fixes
+
+* ensure release-type is set to simple in release-please configuration ([8283c45](https://github.com/fawwazid/go-aes/commit/8283c4563ab8347246d7b1fed3cb656745de7e0e))
+
 ## v2.0.0 — 2026-10-24
 
 Keep authenticated GCM and storage-specific XTS; remove obsolete AES modes.

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/fawwazid/go-aes/compare/v2.0.2...v2.0.3) (2026-11-15)
+
+
+### Bug Fixes
+
+* **security:** update crypto and Go toolchain ([#24](https://github.com/fawwazid/go-aes/issues/24)) ([0a89335](https://github.com/fawwazid/go-aes/commit/0a89335348664f814a2026100a15e7a29d4fbf51))
+
 ## [2.0.2](https://github.com/fawwazid/go-aes/compare/v2.0.1...v2.0.2) (2026-11-08)
 
 

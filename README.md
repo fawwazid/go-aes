@@ -3,7 +3,7 @@
 Install: `go get github.com/fawwazid/go-aes/v2@v2.0.0`.
 See [v2 release notes](CHANGELOG.md) for breaking changes.
 
-AES-GCM authenticated encryption and AES-XTS storage helpers for Go 1.27.3.
+AES-GCM authenticated encryption and AES-XTS storage helpers for Go 1.27.4.
 
 ## Usage
 
